@@ -10,7 +10,7 @@
         }
     ],
     "require": {
-        "wf/docker-workflow-bundle": "dev-master"
+        "wf/docker-workflow-bundle": "^1.0"
     },
     "require-dev": {
         "phpunit/phpunit": "^8.3",
