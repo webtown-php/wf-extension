@@ -1,0 +1,27 @@
+# This file is a "template" of what your parameters.yml file should look like
+#
+# NB!: Some parameters are on purpose placed in default_parameters.yml to not
+#      prompt on all possible parameters during install with no info to go with it.
+#      (This will change once we move to use Symfony flex)
+parameters:
+    # A secret key that's used to generate certain security-related tokens
+    env(SYMFONY_SECRET): ThisEzPlatformTokenIsNotSoSecret_PleaseChangeIt
+
+    # Settings for database backend used by Doctrine DBAL
+    # In turn used for default storage engine & default search engine (if legacy is configured as search engine)
+    env(DATABASE_DRIVER): pdo_mysql
+    env(DATABASE_HOST): mysql
+    env(DATABASE_PORT): ~
+    env(DATABASE_NAME): symfony
+    env(DATABASE_USER): root
+    env(DATABASE_PASSWORD): root
+    env(ANALYTICA_IS_ENABLED): false
+    mailer_transport: smtp
+    mailer_host: mail
+    mailer_user: null
+    mailer_password: null
+    mailer_from: ~
+    mailer_to: ~
+    liip_root_dirs:
+        # @todo (Chris) Ezt inkább a deploy.php fájlba kellene beletenni, hogy az rakja bele, mert egyébként csak gondot okoz a fejlesztői szervereken
+        - %kernel.root_dir%/../../../shared/web # deployer-ed servers

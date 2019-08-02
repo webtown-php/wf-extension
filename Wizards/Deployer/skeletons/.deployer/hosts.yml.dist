@@ -1,0 +1,87 @@
+prod:
+    hostname:         matogrosso.webtown.hu
+    stage:            prod
+    deploy_path:      /srv/{{ project_directory }}
+    user:             support
+    identityFile:     ~/.ssh/id_rsa
+    branch:           master
+    symfony_env:      prod
+    'bin/php':        '/usr/local/php/php5.6/bin/php'
+    'bin/composer':   '/usr/local/php/php5.6/bin/php /usr/local/bin/composer'
+    roles:            [default, fixtures]
+    sshOptions:
+        # A docker-ben a ~/.ssh könyvtár írásvédett, ő meg alapból oda szeretné menteni a fájlt
+        ControlPath:            /tmp/multiplexing.data
+        UserKnownHostsFile:     ~/.ssh/known_hosts
+
+demo:
+    hostname:         amapa.webtown.hu
+    stage:            demo
+    deploy_path:      /srv/docker/{{ project_directory }}
+    user:             phpdeploy
+    # Ide húzzuk be az .ssh kulcsokat a gitlab-runner-ből, lásd `.docker/docker-compose.gitlab-ci.yml` fájl!
+    identityFile:     ~/.ssh/id_rsa
+    branch:           develop
+    symfony_env:      dev
+    # A --no-dev-et kivettük belőle, mivel ez dev.
+    composer_options: '{{ "{{composer_action}}" }} --verbose --prefer-dist --no-progress --no-interaction --optimize-autoloader'
+    # WorkFlow-t használunk
+    roles:            [workflow, fixtures]
+    wf_install_param: --full
+    # Ez fontos!
+    git_tty:          false
+    # Az alábbi egy biztonsági megoldás, hogy semmiképpen ne fussanak le ilyen parancsok.
+    'bin/php':        '# php'
+    'bin/composer':   '# composer'
+    # írás jog
+    writable_mode:          'chmod'
+    writable_chmod_mode:    '777'
+    # Az app_dev.php-t megtartjuk a demo oldalon.
+    clear_paths:    ['web/config.php']
+    # Ez a debug miatt kellhet
+    env:
+        MAKE_DISABLE_SILENCE: 1
+    sshOptions:
+        # A docker-ben a ~/.ssh könyvtár írásvédett, ő meg alapból oda szeretné menteni a fájlt
+        ControlPath:            /tmp/multiplexing.data
+        # Szintén az előbbi indok miatt szükséges egy írható és olvasható, előre kitöltött known_hosts. Tartalom hozzáadása: `ssh-keyscan -t rsa amapa.webtown.hu`
+        UserKnownHostsFile:     ~/.ssh/known_hosts
+    dist_files:
+        .deployer/dist/parameters.yml:  'app/config/parameters.yml'
+        .deployer/dist/.wf.yml:         '!.wf.yml'
+
+branches:
+    hostname:         amapa.webtown.hu
+    stage:            branches
+    deploy_path:      /srv/docker-review/{{ "{{env.DEPLOY_DIR}}" }}
+    user:             phpdeploy
+    # Ide húzzuk be az .ssh kulcsokat a gitlab-runner-ből, lásd `.docker/docker-compose.gitlab-ci.yml` fájl!
+    identityFile:     ~/.ssh/id_rsa
+    branch:           '{{ "{{env.CI_COMMIT_REF_NAME}}" }}'
+    symfony_env:      dev
+    # A --no-dev-et kivettük belőle, mivel ez dev.
+    composer_options: '{{ "{{composer_action}}" }} --verbose --prefer-dist --no-progress --no-interaction --optimize-autoloader'
+    # WorkFlow-t használunk
+    roles:            [workflow, removable]
+    wf_install_param: --full
+    # Ez fontos!
+    git_tty:          false
+    # Az alábbi egy biztonsági megoldás, hogy semmiképpen ne fussanak le ilyen parancsok.
+    'bin/php':        '# php'
+    'bin/composer':   '# composer'
+    # írás jog
+    writable_mode:          'chmod'
+    writable_chmod_mode:    '777'
+    # Az app_dev.php-t megtartjuk a demo oldalon.
+    clear_paths:    ['web/config.php']
+    # Ez a debug miatt kellhet
+    env:
+        MAKE_DISABLE_SILENCE: 1
+    sshOptions:
+        # A docker-ben a ~/.ssh könyvtár írásvédett, ő meg alapból oda szeretné menteni a fájlt
+        ControlPath:            /tmp/multiplexing.data
+        # Szintén az előbbi indok miatt szükséges egy írható és olvasható, előre kitöltött known_hosts. Tartalom hozzáadása: `ssh-keyscan -t rsa amapa.webtown.hu`
+        UserKnownHostsFile:     ~/.ssh/known_hosts
+    dist_files:
+        .deployer/dist/parameters.yml:      'app/config/parameters.yml'
+        .deployer/dist/.wf.branches.yml:    '!@.wf.yml'

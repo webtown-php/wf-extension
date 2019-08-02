@@ -1,0 +1,22 @@
+version: '3.4'
+
+x-base:
+    &default
+    build: .
+    working_dir: /var/www/bundle
+    volumes:
+        - /var/run/docker.sock:/var/run/docker.sock
+        - ./:/var/www/bundle:delegated
+    user: ${CURRENT_UID}
+
+services:
+
+    test:
+        << : *default
+        command: php vendor/bin/phpunit
+
+    shell:
+        << : *default
+        command: /bin/sh
+        environment:
+            - COMPOSER_HOME=/tmp

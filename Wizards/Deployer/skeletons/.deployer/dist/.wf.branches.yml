@@ -1,0 +1,38 @@
+imports:
+    - .wf.base.yml
+    - .wf.dev.yml
+
+name: {{ "{{env.DEPLOY_NAME}}" }}
+
+# Config the docker compose data.
+#docker_compose:
+#    # Docker Compose yaml configuration. You mustn't use the version parameter, it will be automatically.
+#    extension:
+#        # Example:
+#        services:
+#            yarn:
+#                volumes:
+#                    - '%wf.project_path%:/usr/src/app'
+#                    - '%wf.project_path%/../../shared:/usr/src/app/../../shared'
+
+# The configs of recipes
+recipes:
+    # Switch on deployer env
+    php_deployer_environment:
+        share: ['engine', 'web']
+    # Switch on mail
+    mail: ~
+
+    # Include a MySQL service
+    mysql:
+        local_volume: true
+        # disable ports
+        port: 0
+
+    # You can enable the nginx-reverse-proxy.
+    nginx_reverse_proxy:
+        # You have to set the service and its host and port settings.
+        settings:
+            web:
+                host: {{ "{{env.DEPLOY_DOMAIN}}" }}
+                port: 88

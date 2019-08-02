@@ -1,0 +1,9 @@
+version: "{{ config.docker_compose.version }}"
+
+services:
+{% for service in share %}
+    {{ service }}:
+        volumes:
+            # Project shared directory
+            - "${BASE_DIRECTORY}/../../shared:${DOCKER_DOC_ROOT}/../../shared"
+{% endfor %}

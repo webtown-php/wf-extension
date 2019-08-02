@@ -1,0 +1,48 @@
+imports:
+    - .wf.base.yml
+
+name: gitlab_{{ project_name }}
+
+docker_compose:
+    # Docker Compose yaml configuration. You mustn't use the version parameter, it will be automatically.
+    extension:
+        services:
+            engine:
+                environment:
+                    SYMFONY_DEPRECATIONS_HELPER: disabled
+                    # It is important to deploy
+                    DEPLOY_DIR: ${DEPLOY_DIR}
+                    DEPLOY_DOMAIN: ${DEPLOY_DOMAIN}
+                    DEPLOY_NAME: ${DEPLOY_NAME}
+                    CI_COMMIT_REF_NAME: ${CI_COMMIT_REF_NAME}
+
+# The configs of recipes
+recipes:
+    gitlab_ci_webtown_runner:
+        volumes:
+            mysql:
+                data: /var/lib/mysql
+
+    # {{ sf_recipe_name|default('????symfony????') }} recipe
+    {{ sf_recipe_name|default('????symfony????') }}:
+        # Symfony environment.
+        env:     dev
+        share_base_user_configs: false
+        server:
+            # You can switch on and off the xdebug.
+            xdebug:         false
+            # You can switch on and off debug mode. IMPORTANT! The debug mode makes lot of logs!
+            nginx_debug:    false
+
+    # Include a MySQL service
+    mysql:
+        local_volume: false
+        # disable ports
+        port: 0
+
+    git_flow: false
+    # You can enable the nginx-reverse-proxy.
+    nginx_reverse_proxy: false
+    # Here you can fix the container user ID and group ID, for example if you want to share some files, and you'd love
+    # the correct file permissions.
+    user_fix: false

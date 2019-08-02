@@ -1,0 +1,18 @@
+version: "{{ config.docker_compose.version }}"
+
+services:
+{% for service, settings in volumes %}
+    {{ service }}:
+        volumes:
+{% for name, target in settings %}
+            - "{{ service}}_{{ name }}_{{ env.CI_PIPELINE_ID | default(git_hash) | default('0') }}:{{ target }}"
+{% endfor %}
+{% endfor %}
+
+volumes:
+{% for service, settings in volumes %}
+{% for name, target in settings %}
+    {{ service }}_{{ name }}_{{ env.CI_PIPELINE_ID | default(git_hash) | default('0') }}:
+        driver: local
+{% endfor %}
+{% endfor %}

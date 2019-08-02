@@ -1,0 +1,344 @@
+stages:
+    - build
+    - test
+    - deploy
+    - cleanup
+
+cache:
+    key: ${CI_PIPELINE_ID}
+    untracked: true
+    paths:
+        - vendor
+        - var
+
+variables:
+    ###>> Adj a projektnek nevet (mint ha könyvtár nevet adnál!)
+    BASE_NAME: {{ project_name }}
+    BIN_DIRECTORY: {{ sf_bin_dir }}
+    ###<<
+    SYMFONY_ENV: test
+    COMPOSE_PROJECT_NAME: ${BASE_NAME}pipeline${CI_PIPELINE_ID}
+    COMPOSE_HTTP_TIMEOUT: 300
+    # For debugging
+#    MAKE_DISABLE_SILENCE: 1
+#    MAKE_DEBUG_MODE: 1
+    # This is an integer between 0 and 3
+#    WF_DEBUG: 2
+
+.all_jobs: &all_jobs
+    tags:
+        - wf
+
+.debug:
+    script:
+        # Environment
+        - env
+        - locale
+        - echo $USER
+        - echo ~
+        - pwd
+        - docker version
+        - docker-compose version
+        - wf --version
+        - echo ${COMPOSE_PROJECT_NAME}
+        - docker ps
+        - docker volume ls
+        - wf reconfigure
+        - wf debug-docker-config
+
+.docker_init_and_stop: &docker_init_and_stop
+    before_script:
+        # You can register ENV values trough the `$WF_ENV` variable
+        - printf "%s" "${WF_ENV:-""}" > .wf.env
+        - wf up
+        - wf docker-compose exec -T engine /usr/local/bin/entrypoint.sh --wait-for-init
+        # waiting for mysql
+        - wf exec engine wait-for-it.sh mysql:3306 -t 60
+        - printf "\n\n\n\n\tSTART\n\n\n\n\n"
+    after_script:
+        - printf "\n\n\n\n\tEND\n\n\n\n\n"
+        - wf docker-compose down --remove-orphans || true
+    # Change cache policy to make faster the CI pipeline
+    cache:
+        key: ${CI_PIPELINE_ID}
+        untracked: true
+        policy: pull
+
+.deploy:
+    script: &deploy
+        # check required parameters
+        ###>> Az SSH_KNOWN_HOSTS-ot be kell állítani a projekt gitlab ci beállításainál Secret variables-nak: `ssh-keyscan -H matogrosso.webtown.hu`
+        ###   Az SSH_KEY-ot be kell állítani a projekt gitlab ci beállításainál Secret variables-nak!
+        - '[[ -z "$SSH_KEY" ]] && echo "You have to set the SSH_KEY parameter!" && exit 1'
+        - '[[ -z "$SSH_KNOWN_HOSTS" ]] && echo "You have to set the SSH_KNOWN_HOSTS parameter!" && exit 1'
+        - '[[ -z "$STAGE" ]] && echo "You have to set the STAGE parameter!" && exit 1'
+        ###<<
+        # init
+        - env
+        - wf debug-docker-config
+#        - wf composer install
+        # Set SSH parameters
+        - ENGINE=$(WF_DEBUG=0 wf ps -q engine)
+        - SSH_PATH=/usr/local/etc/ssh
+        - echo "docker exec -i -u $(id -u) $ENGINE mkdir -p $SSH_PATH"
+        - docker exec -i $ENGINE mkdir -p $SSH_PATH
+        - docker exec -i $ENGINE chown $(id -u) $SSH_PATH
+        - docker exec -i -u $(id -u) $ENGINE chmod 700 $SSH_PATH
+        - docker exec -i -u $(id -u) $ENGINE ls -al $SSH_PATH
+        - docker exec -i -u $(id -u) $ENGINE bash -c "echo '$SSH_KEY' | tr -d '\r' > $SSH_PATH/id_rsa"
+        - docker exec -i -u $(id -u) $ENGINE chmod 600 $SSH_PATH/id_rsa
+        - docker exec -i -u $(id -u) $ENGINE bash -c "echo '$SSH_KNOWN_HOSTS' > $SSH_PATH/known_hosts"
+        - docker exec -i $ENGINE bash -c "echo '    IdentityFile $SSH_PATH/id_rsa' >> /etc/ssh/ssh_config"
+        - docker exec -i $ENGINE bash -c "echo '    UserKnownHostsFile $SSH_PATH/known_hosts' >> /etc/ssh/ssh_config"
+        - docker exec -i $ENGINE cat /etc/ssh/ssh_config
+        - docker exec -i -u $(id -u) $ENGINE ls -al $SSH_PATH
+        # Set servers.yml
+        - cp .deployer/hosts.yml.dist .deployer/hosts.yml
+        # change the ~/.ssh base directory to the /usr/local/etc/ssh directory
+        - sed -e 's:~/.ssh/:/usr/local/etc/ssh/:' -i .deployer/hosts.yml
+        # ------
+        - cat .wf.yml
+        - cat .wf.env
+        - ls -al
+        # ------
+        # Deploy. You can change the action trough the $DEPLOY_ACTION variable. Eg for the stop action.
+        - echo "wf dep ${DEPLOY_ACTION:-deploy} ${STAGE} --revision='${CI_BUILD_REF}'"
+#        - wf dep ${DEPLOY_ACTION:-deploy} -vvv ${STAGE} --revision="${CI_BUILD_REF}"
+        - wf dep ${DEPLOY_ACTION:-deploy} ${STAGE} --revision="${CI_BUILD_REF}"
+        # You should set these on admin --> variables:
+        #   - SLACK_API_URL
+        #   - SLACK_ICON_EMOJI
+        #   - SLACK_ICON_16x16
+        # We switch off $DEPLOY_ACTION when the deploy action is stoping
+        - '[[ ! -z "$SLACK_API_URL" ]] && [[ "${DEPLOY_ACTION:-deploy}" == "deploy" ]] && curl -X POST --data-urlencode "payload={
+            \"channel\": \"#gitlab\",
+            \"username\": \"GitLab\",
+            \"text\": \"*${CI_PROJECT_NAME}* has deployed to *${STAGE}*\",
+            \"icon_emoji\": \"${SLACK_ICON_EMOJI}\",
+            \"attachments\": [
+                {
+                    \"fields\": [
+                        {
+                            \"title\": \"Stage\",
+                            \"value\": \"${STAGE}\",
+                            \"short\": true
+                        },
+                        {
+                            \"title\": \"Commit reference\",
+                            \"value\": \"${CI_COMMIT_REF_NAME}\",
+                            \"short\": true
+                        },
+                        {
+                            \"title\": \"SHA1\",
+                            \"value\": \"${CI_COMMIT_SHA}\",
+                            \"short\": false
+                        },
+                        {
+                            \"title\": \"Link\",
+                            \"value\": \"${CI_ENVIRONMENT_URL}\",
+                            \"short\": false
+                        },
+                        {
+                            \"title\": \"Gitlab\",
+                            \"value\": \"${CI_PROJECT_URL}\",
+                            \"short\": false
+                        },
+                        {
+                            \"title\": \"Environments\",
+                            \"value\": \"${CI_PROJECT_URL}/environments\",
+                            \"short\": false
+                        }
+                    ],
+                    \"author_name\": \"${CI_PROJECT_NAME}\",
+                    \"author_icon\": \"${SLACK_ICON_16x16}\",
+                    \"color\": \"${SLACK_COLOR}\"
+                }
+            ]}" $SLACK_API_URL'
+
+build:
+    stage: build
+    <<: *all_jobs
+    script:
+        # Init
+        ###>> Így kell inicializálni?
+        - cp -f app/config/parameters.gitlab-ci.yml app/config/parameters.yml
+        - wf init
+        - cp -f .wf.gitlab-ci.yml .wf.yml
+        - wf reconfigure
+        - wf debug-docker-config
+        - wf up
+        - wf exec engine wait-for-it.sh mysql:3306 -t 60
+        - wf install
+#        - wf composer install -n
+#        - wf sf doctrine:database:create --if-not-exists
+#        - wf sf doctrine:migrations:migrate -n
+        ###<<
+
+test:codeSniffer:
+    stage: test
+    <<: *all_jobs
+    <<: *docker_init_and_stop
+    script:
+        ###>> A PHP-CS fixet így kell hívni?
+        - wf php ${BIN_DIRECTORY}/php-cs-fixer fix --dry-run --config=.php_cs.dist
+        ###<<
+
+test:database:
+    stage: test
+    <<: *all_jobs
+    <<: *docker_init_and_stop
+    script:
+        - wf sf doctrine:mapping:info
+        - wf sf doctrine:schema:validate
+        #- wf sf doctrine:fixtures:load -n
+
+test:unittest:
+    stage: test
+    <<: *all_jobs
+    <<: *docker_init_and_stop
+    script:
+        - wf php ${BIN_DIRECTORY}/phpunit --debug
+
+test:phpmd:
+    stage: test
+    <<: *all_jobs
+    <<: *docker_init_and_stop
+    script:
+        - wf php ${BIN_DIRECTORY}/phpmd src xml phpmd.xml --reportfile-xml phpmd-results.xml --reportfile-html phpmd-results.html | sed --unbuffered
+            -e 's:<file name=\("[^>]*"\)>:<file name=\o033[1;36m\1\o033[0;39m>:g'
+            -e 's:\(beginline\|endline\|rule\)=\("[^"]*"\):\o033[1;31m\1\o033[0;39m=\o033[33m\2\o033[39m:g'
+    artifacts:
+        name: "${CI_JOB_NAME}_${CI_COMMIT_REF_NAME}_${CI_PIPELINE_ID}"
+        expire_in: 2 week
+        when: on_failure
+        paths:
+            - phpmd-results.xml
+            - phpmd-results.html
+
+# You can use it if install security checker: `composer require sensiolabs/security-checker`
+#test:security:
+#    stage: test
+#    <<: *all_jobs
+#    <<: *docker_init_and_stop
+#    script:
+#        - wf sf security:check
+#    allow_failure: true
+
+deploy:demo:
+    stage: deploy
+    <<: *all_jobs
+    <<: *docker_init_and_stop
+    variables:
+        SSH_KEY:     ${SSH_DEMO_DEPLOY_KEY}
+        STAGE:       demo
+        SLACK_COLOR: '#ccc'
+    script: *deploy
+    environment:
+        name: demo
+        url:  http://{{ project_name }}.amapa.webtown.hu:88/
+    only:
+        - develop
+
+deploy:branch:
+    stage: deploy
+    <<: *all_jobs
+    <<: *docker_init_and_stop
+    variables:
+        SSH_KEY:     ${SSH_DEMO_DEPLOY_KEY}
+        STAGE:       branches
+        SLACK_COLOR: '#fff'
+        WF_ENV: |
+            DEPLOY_DIR=${CI_PROJECT_PATH_SLUG}/${CI_BUILD_REF_SLUG}
+            DEPLOY_DOMAIN=${CI_BUILD_REF_SLUG}.{{ project_name }}.amapa.webtown.hu
+            DEPLOY_NAME=${BASENAME}${CI_JOB_ID}
+            CI_COMMIT_REF_NAME=${CI_COMMIT_REF_NAME}
+#        WF_DEBUG:       2
+    script: *deploy
+    environment:
+        name: review/${CI_BUILD_REF_SLUG}
+        url:  http://${CI_BUILD_REF_SLUG}.{{ project_name }}.amapa.webtown.hu:88/
+        on_stop: review:stop
+    only:
+        - /^(feature|hotfix)/
+
+review:stop:
+    stage: deploy
+    <<: *all_jobs
+    <<: *docker_init_and_stop
+    variables:
+        SSH_KEY:     ${SSH_DEMO_DEPLOY_KEY}
+        STAGE:       branches
+        DEPLOY_ACTION: deploy:remove
+        WF_ENV: |
+            DEPLOY_DIR=${CI_PROJECT_PATH_SLUG}/${CI_BUILD_REF_SLUG}
+            DEPLOY_DOMAIN=${CI_BUILD_REF_SLUG}.{{ project_name }}.amapa.webtown.hu
+            DEPLOY_NAME=${BASENAME}${CI_JOB_ID}
+            CI_COMMIT_REF_NAME=${CI_COMMIT_REF_NAME}
+    script: *deploy
+    when: manual
+    environment:
+        name: review/${CI_BUILD_REF_SLUG}
+        action: stop
+    only:
+        - /^(feature|hotfix)/
+
+###>> Ezt ki kell tölteni
+deploy:prod:
+    stage: deploy
+    <<: *all_jobs
+    <<: *docker_init_and_stop
+    variables:
+        SSH_KEY:     ${SSH_PROD_DEPLOY_KEY}
+        STAGE:       prod
+        SLACK_COLOR: '#7acc7f'
+    script:
+        - echo "Deploy to production server"
+    environment:
+        name: production
+        url: https://example.com
+    when: manual
+    only:
+        - master
+    except:
+        - tags
+
+deploy:auto:prod:
+    stage: deploy
+    <<: *all_jobs
+    <<: *docker_init_and_stop
+    variables:
+        SSH_KEY:    ${SSH_PROD_DEPLOY_KEY}
+        STAGE:      prod
+        SLACK_COLOR: '#7acc7f'
+    script:
+        - echo "Deploy to production server"
+    environment:
+        name: prod
+        url:  https://example.com
+    only:
+        - /^v?[\d\.]+$/
+###<<
+
+# This doesn't remove the image
+cleanup:auto:
+    stage: cleanup
+    <<: *all_jobs
+    script:
+        - wf docker-compose rm -v -f -s || true
+        - docker rm -v $(docker ps -a -q -f status=exited) || true
+        - docker rm -v $(docker ps -a -q -f status=exited) || true
+        - docker volume rm $(docker volume ls -qf dangling=true | grep -v '^gitlab-runner') || true
+        - docker volume ls
+        - docker network rm $(docker network ls -q -f name="${COMPOSE_PROJECT_NAME}*") || true
+    when: always
+
+# This remove the images
+cleanup:images:
+    stage: cleanup
+    <<: *all_jobs
+    script:
+        # Ezt adtuk hozzá pluszban, ebben más, mint a cleanup
+        - docker rmi -f $(docker images -q "${COMPOSE_PROJECT_NAME}*" | sort -u) || true
+        - docker volume rm $(docker volume ls -qf dangling=true) || true
+        - docker network rm $(docker network ls -q -f name="${COMPOSE_PROJECT_NAME}*") || true
+    when: manual
