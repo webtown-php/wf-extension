@@ -1,5 +1,5 @@
 {
-    "name": "workflow/base-extensions-bundle",
+    "name": "webtown/wf-extension",
     "description": "Add base recipes and wizards to Workflow framework.",
     "type": "library",
     "license": "MIT",
