@@ -1,7 +1,7 @@
 {
     "name": "webtown/wf-extension",
     "description": "Add base recipes and wizards to Workflow framework.",
-    "type": "library",
+    "type": "symfony-bundle",
     "license": "MIT",
     "authors": [
         {
@@ -21,11 +21,5 @@
         "psr-4": {
             "Wf\\Webtown\\": ""
         }
-    },
-    "repositories": [
-        {
-            "type": "vcs",
-            "url": "https://ferenczikrisztian@bitbucket.org/fchris82-webtown/webtown-worfklow-bundle.git"
-        }
-    ]
+    }
 }
