@@ -19,7 +19,7 @@
     },
     "autoload": {
         "psr-4": {
-            "Wf\\Webtown\\": ""
+            "Wf\\Webtown\\": "src/"
         }
     }
 }
