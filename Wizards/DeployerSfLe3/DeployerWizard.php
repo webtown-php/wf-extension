@@ -8,15 +8,15 @@
 
 namespace Wf\Webtown\Wizards\DeployerSfLe3;
 
-use Wf\WorkflowBundle\Environment\Commander;
-use Wf\WorkflowBundle\Environment\EnvParser;
-use Wf\WorkflowBundle\Environment\EzEnvironmentParser;
-use Wf\WorkflowBundle\Environment\IoManager;
-use Wf\WorkflowBundle\Environment\MicroParser\ComposerInstalledVersionParser;
-use Wf\WorkflowBundle\Environment\WfEnvironmentParser;
-use Wf\WorkflowBundle\Event\Wizard\BuildWizardEvent;
-use Wf\WorkflowBundle\Exception\WizardSomethingIsRequiredException;
-use Wf\WorkflowBundle\Exception\WizardWfIsRequiredException;
+use Wf\DockerWorkflowBundle\Environment\Commander;
+use Wf\DockerWorkflowBundle\Environment\EnvParser;
+use Wf\DockerWorkflowBundle\Environment\EzEnvironmentParser;
+use Wf\DockerWorkflowBundle\Environment\IoManager;
+use Wf\DockerWorkflowBundle\Environment\MicroParser\ComposerInstalledVersionParser;
+use Wf\DockerWorkflowBundle\Environment\WfEnvironmentParser;
+use Wf\DockerWorkflowBundle\Event\Wizard\BuildWizardEvent;
+use Wf\DockerWorkflowBundle\Exception\WizardSomethingIsRequiredException;
+use Wf\DockerWorkflowBundle\Exception\WizardWfIsRequiredException;
 use Wf\Webtown\Wizards\Deployer\DeployerWizard as BaseDeployerWizard;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;

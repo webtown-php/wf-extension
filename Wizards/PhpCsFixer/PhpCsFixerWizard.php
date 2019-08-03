@@ -8,16 +8,16 @@
 
 namespace Wf\Webtown\Wizards\PhpCsFixer;
 
-use Wf\WorkflowBundle\Environment\Commander;
-use Wf\WorkflowBundle\Environment\IoManager;
-use Wf\WorkflowBundle\Environment\SymfonyEnvironmentParser;
-use Wf\WorkflowBundle\Environment\WfEnvironmentParser;
-use Wf\WorkflowBundle\Event\SkeletonBuild\DumpFileEvent;
-use Wf\WorkflowBundle\Event\Wizard\BuildWizardEvent;
-use Wf\WorkflowBundle\Exception\WizardSomethingIsRequiredException;
-use Wf\WorkflowBundle\Exception\WizardWfIsRequiredException;
-use Wf\WorkflowBundle\Skeleton\FileType\SkeletonFile;
-use Wf\WorkflowBundle\Wizards\BaseSkeletonWizard;
+use Wf\DockerWorkflowBundle\Environment\Commander;
+use Wf\DockerWorkflowBundle\Environment\IoManager;
+use Wf\DockerWorkflowBundle\Environment\SymfonyEnvironmentParser;
+use Wf\DockerWorkflowBundle\Environment\WfEnvironmentParser;
+use Wf\DockerWorkflowBundle\Event\SkeletonBuild\DumpFileEvent;
+use Wf\DockerWorkflowBundle\Event\Wizard\BuildWizardEvent;
+use Wf\DockerWorkflowBundle\Exception\WizardSomethingIsRequiredException;
+use Wf\DockerWorkflowBundle\Exception\WizardWfIsRequiredException;
+use Wf\DockerWorkflowBundle\Skeleton\FileType\SkeletonFile;
+use Wf\DockerWorkflowBundle\Wizards\BaseSkeletonWizard;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 use Twig\Environment;

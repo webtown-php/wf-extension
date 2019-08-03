@@ -1,0 +1,13 @@
+services:
+    Wf\Webtown\Wizards\Deployer\DeployerWizard:
+        arguments:
+            - "@Wf\\DockerWorkflowBundle\\Environment\\MicroParser\\ComposerInstalledVersionParser"
+            - "@Wf\\DockerWorkflowBundle\\Environment\\WfEnvironmentParser"
+            - "@Wf\\DockerWorkflowBundle\\Environment\\EnvParser"
+            - "@Wf\\DockerWorkflowBundle\\Environment\\IoManager"
+            - "@Wf\\DockerWorkflowBundle\\Environment\\Commander"
+            - "@Symfony\\Contracts\\EventDispatcher\\EventDispatcherInterface"
+            - "@twig"
+            - "@Symfony\\Component\\Filesystem\\Filesystem"
+        tags:
+            - { name: wf.wizard }
