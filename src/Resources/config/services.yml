@@ -10,42 +10,43 @@ services:
         arguments:
             - "@twig"
             - "@Symfony\\Contracts\\EventDispatcher\\EventDispatcherInterface"
-            tags:
-                - { name: wf.recipe }
+        tags:
+            - { name: wf.recipe }
 
     Wf\Webtown\Recipes\GitlabCiWebtownRunner\GitlabCiWebtownRunnerRecipe:
         arguments:
             - "@twig"
             - "@Symfony\\Contracts\\EventDispatcher\\EventDispatcherInterface"
-            tags:
-                - { name: wf.recipe }
+        tags:
+            - { name: wf.recipe }
 
     Wf\Webtown\Recipes\Php\PhpRecipe:
         arguments:
             - "@twig"
             - "@Symfony\\Contracts\\EventDispatcher\\EventDispatcherInterface"
-            tags:
-                - { name: wf.recipe }
+        tags:
+            - { name: wf.recipe }
+
     Wf\Webtown\Recipes\PhpDeployerEnvironment\PhpDeployerEnvironmentRecipe:
         arguments:
             - "@twig"
             - "@Symfony\\Contracts\\EventDispatcher\\EventDispatcherInterface"
-            tags:
-                - { name: wf.recipe }
+        tags:
+            - { name: wf.recipe }
 
     Wf\Webtown\Recipes\SymfonyEz1\SymfonyEz1Recipe:
         arguments:
             - "@twig"
             - "@Symfony\\Contracts\\EventDispatcher\\EventDispatcherInterface"
-            tags:
-                - { name: wf.recipe }
+        tags:
+            - { name: wf.recipe }
 
     Wf\Webtown\Recipes\SymfonyEz2\SymfonyEz2Recipe:
         arguments:
             - "@twig"
             - "@Symfony\\Contracts\\EventDispatcher\\EventDispatcherInterface"
-            tags:
-                - { name: wf.recipe }
+        tags:
+            - { name: wf.recipe }
 
     # --------------------------------------------------   WIZARDS    --------------------------------------------------
     Wf\Webtown\Wizards\Deployer\DeployerWizard:
