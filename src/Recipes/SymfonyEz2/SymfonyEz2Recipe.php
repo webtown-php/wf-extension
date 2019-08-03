@@ -8,7 +8,7 @@
 
 namespace Wf\Webtown\Recipes\SymfonyEz2;
 
-use Wf\Webtown\Recipes\Symfony3\Symfony3Recipe;
+use App\Recipes\Symfony3\Symfony3Recipe;
 
 // @todo (Chris) Az ős osztály egy vendor-on kívüli bundle-ben van egyelőre!
 class SymfonyEz2Recipe extends Symfony3Recipe
