@@ -1,9 +1,133 @@
 services:
+    Wf\Webtown\Recipes\GitFlow\GitFlowRecipe:
+        arguments:
+            - "@twig"
+            - "@Symfony\\Contracts\\EventDispatcher\\EventDispatcherInterface"
+        tags:
+            - { name: wf.recipe }
+
+    Wf\Webtown\Recipes\GitlabCi\GitlabCiRecipe:
+        arguments:
+            - "@twig"
+            - "@Symfony\\Contracts\\EventDispatcher\\EventDispatcherInterface"
+            tags:
+                - { name: wf.recipe }
+
+    Wf\Webtown\Recipes\GitlabCiWebtownRunner\GitlabCiWebtownRunnerRecipe:
+        arguments:
+            - "@twig"
+            - "@Symfony\\Contracts\\EventDispatcher\\EventDispatcherInterface"
+            tags:
+                - { name: wf.recipe }
+
+    Wf\Webtown\Recipes\Php\PhpRecipe:
+        arguments:
+            - "@twig"
+            - "@Symfony\\Contracts\\EventDispatcher\\EventDispatcherInterface"
+            tags:
+                - { name: wf.recipe }
+    Wf\Webtown\Recipes\PhpDeployerEnvironment\PhpDeployerEnvironmentRecipe:
+        arguments:
+            - "@twig"
+            - "@Symfony\\Contracts\\EventDispatcher\\EventDispatcherInterface"
+            tags:
+                - { name: wf.recipe }
+
+    Wf\Webtown\Recipes\SymfonyEz1\SymfonyEz1Recipe:
+        arguments:
+            - "@twig"
+            - "@Symfony\\Contracts\\EventDispatcher\\EventDispatcherInterface"
+            tags:
+                - { name: wf.recipe }
+
+    Wf\Webtown\Recipes\SymfonyEz2\SymfonyEz2Recipe:
+        arguments:
+            - "@twig"
+            - "@Symfony\\Contracts\\EventDispatcher\\EventDispatcherInterface"
+            tags:
+                - { name: wf.recipe }
+
+    # --------------------------------------------------   WIZARDS    --------------------------------------------------
     Wf\Webtown\Wizards\Deployer\DeployerWizard:
         arguments:
             - "@Wf\\DockerWorkflowBundle\\Environment\\MicroParser\\ComposerInstalledVersionParser"
             - "@Wf\\DockerWorkflowBundle\\Environment\\WfEnvironmentParser"
             - "@Wf\\DockerWorkflowBundle\\Environment\\EnvParser"
+            - "@Wf\\DockerWorkflowBundle\\Environment\\IoManager"
+            - "@Wf\\DockerWorkflowBundle\\Environment\\Commander"
+            - "@Symfony\\Contracts\\EventDispatcher\\EventDispatcherInterface"
+            - "@twig"
+            - "@Symfony\\Component\\Filesystem\\Filesystem"
+        tags:
+            - { name: wf.wizard }
+
+    Wf\Webtown\Wizards\DeployerSfGe4\DeployerWizard:
+        arguments:
+            - "@Wf\\DockerWorkflowBundle\\Environment\\MicroParser\\ComposerInstalledVersionParser"
+            - "@Wf\\DockerWorkflowBundle\\Environment\\WfEnvironmentParser"
+            - "@Wf\\DockerWorkflowBundle\\Environment\\EzEnvironmentParser"
+            - "@Wf\\DockerWorkflowBundle\\Environment\\EnvParser"
+            - "@Wf\\DockerWorkflowBundle\\Environment\\IoManager"
+            - "@Wf\\DockerWorkflowBundle\\Environment\\Commander"
+            - "@Symfony\\Contracts\\EventDispatcher\\EventDispatcherInterface"
+            - "@twig"
+            - "@Symfony\\Component\\Filesystem\\Filesystem"
+        tags:
+            - { name: wf.wizard }
+
+    Wf\Webtown\Wizards\DeployerSfLe3\DeployerWizard:
+        arguments:
+            - "@Wf\\DockerWorkflowBundle\\Environment\\MicroParser\\ComposerInstalledVersionParser"
+            - "@Wf\\DockerWorkflowBundle\\Environment\\WfEnvironmentParser"
+            - "@Wf\\DockerWorkflowBundle\\Environment\\EzEnvironmentParser"
+            - "@Wf\\DockerWorkflowBundle\\Environment\\EnvParser"
+            - "@Wf\\DockerWorkflowBundle\\Environment\\IoManager"
+            - "@Wf\\DockerWorkflowBundle\\Environment\\Commander"
+            - "@Symfony\\Contracts\\EventDispatcher\\EventDispatcherInterface"
+            - "@twig"
+            - "@Symfony\\Component\\Filesystem\\Filesystem"
+        tags:
+            - { name: wf.wizard }
+
+    Wf\Webtown\Wizards\Ez\EzBuildWizard:
+        arguments:
+            - "@Wf\\DockerWorkflowBundle\\Environment\\WfEnvironmentParser"
+            - "@Wf\\DockerWorkflowBundle\\Environment\\EzEnvironmentParser"
+            - "@Wf\\DockerWorkflowBundle\\Environment\\IoManager"
+            - "@Wf\\DockerWorkflowBundle\\Environment\\Commander"
+            - "@Symfony\\Contracts\\EventDispatcher\\EventDispatcherInterface"
+        tags:
+            - { name: wf.wizard }
+
+    Wf\Webtown\Wizards\GitlabCIProject\GitlabCIProjectWizard:
+        arguments:
+            - "@Wf\\DockerWorkflowBundle\\Environment\\EzEnvironmentParser"
+            - "@Wf\\DockerWorkflowBundle\\Environment\\WfEnvironmentParser"
+            - "@Wf\\DockerWorkflowBundle\\Environment\\EnvParser"
+            - "@Wf\\DockerWorkflowBundle\\Environment\\IoManager"
+            - "@Wf\\DockerWorkflowBundle\\Environment\\Commander"
+            - "@Symfony\\Contracts\\EventDispatcher\\EventDispatcherInterface"
+            - "@twig"
+            - "@Symfony\\Component\\Filesystem\\Filesystem"
+        tags:
+            - { name: wf.wizard }
+
+    Wf\Webtown\Wizards\PhpCsFixer\PhpCsFixerWizard:
+        arguments:
+            - "@Wf\\DockerWorkflowBundle\\Environment\\WfEnvironmentParser"
+            - "@Wf\\DockerWorkflowBundle\\Environment\\SymfonyEnvironmentParser"
+            - "@Wf\\DockerWorkflowBundle\\Environment\\IoManager"
+            - "@Wf\\DockerWorkflowBundle\\Environment\\Commander"
+            - "@Symfony\\Contracts\\EventDispatcher\\EventDispatcherInterface"
+            - "@twig"
+            - "@Symfony\\Component\\Filesystem\\Filesystem"
+        tags:
+            - { name: wf.wizard }
+
+    Wf\Webtown\Wizards\PhpMd\PhpMdWizard:
+        arguments:
+            - "@Wf\\DockerWorkflowBundle\\Environment\\EzEnvironmentParser"
+            - "@Wf\\DockerWorkflowBundle\\Environment\\WfEnvironmentParser"
             - "@Wf\\DockerWorkflowBundle\\Environment\\IoManager"
             - "@Wf\\DockerWorkflowBundle\\Environment\\Commander"
             - "@Symfony\\Contracts\\EventDispatcher\\EventDispatcherInterface"

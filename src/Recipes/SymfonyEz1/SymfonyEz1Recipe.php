@@ -1,15 +1,10 @@
 <?php declare(strict_types=1);
-/**
- * Created by IntelliJ IDEA.
- * User: chris
- * Date: 2018.03.29.
- * Time: 15:23
- */
 
 namespace Wf\Webtown\Recipes\SymfonyEz1;
 
-use Wf\Webtown\Recipes\Symfony2\Symfony2Recipe;
+use \App\Recipes\Symfony2\Symfony2Recipe;
 
+// @todo (Chris) Az ős osztály egy vendor-on kívüli bundle-ben van egyelőre!
 class SymfonyEz1Recipe extends Symfony2Recipe
 {
     const NAME = 'symfony_ez1';
